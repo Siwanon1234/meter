@@ -1,0 +1,50 @@
+#include <Adafruit_GFX.h>       // ไลบรารีกราฟิก
+#include <Adafruit_ST7789.h>    // ไลบรารีจอ TFT ST7789
+#include <TouchScreen.h>        // ไลบรารี Touchscreen
+#include <SPI.h>                // ไลบรารี SPI
+
+// กำหนดพิน TFT
+#define TFT_CS   10
+#define TFT_RST  9
+#define TFT_DC   8
+
+// กำหนดพิน Touchscreen
+#define YP A2   // Pin Y+
+#define XM A3   // Pin X-
+#define YM 8    // Pin Y-
+#define XP 9    // Pin X+
+
+// ค่าความต้านทานสำหรับ Touchscreen
+#define TS_MINX 200
+#define TS_MAXX 900
+#define TS_MINY 150
+#define TS_MAXY 850
+
+// สร้างอ็อบเจกต์จอ TFT และ Touchscreen
+Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
+TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+
+void setup() {
+  tft.init(240, 240);            // เริ่มจอ TFT (ความละเอียด 240x240 พิกเซล)
+  tft.setRotation(1);            // หมุนจอแนวนอน
+  tft.fillScreen(ST77XX_BLACK);  // เคลียร์หน้าจอสีดำ
+
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(10, 20);
+  tft.println("Touch Test!");
+}
+
+void loop() {
+  TSPoint p = ts.getPoint();
+
+  // ตรวจสอบว่ามีการสัมผัสหรือไม่
+  if (p.z > ts.pressureThreshhold) {
+    // Map พิกัดสัมผัสให้ตรงกับหน้าจอ
+    int x = map(p.x, TS_MINX, TS_MAXX, 0, 240);
+    int y = map(p.y, TS_MINY, TS_MAXY, 0, 240);
+
+    // วาดจุดที่สัมผัส
+    tft.fillCircle(x, y, 5, ST77XX_RED);
+  }
+}
